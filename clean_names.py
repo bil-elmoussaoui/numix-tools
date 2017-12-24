@@ -1,13 +1,19 @@
-import glob
 import json
-from os import path
-from shutil import move
 from collections import OrderedDict
+from os import listdir, path
+from shutil import move
 
 
-cercle_icons = "./icons/circle/48/"
-square_icons = "./icons/square/48/"
-data_file = "./data.json"
+# Load themes paths
+themes = listdir("./icons")
+themes_paths = []
+for theme in themes:
+    theme_path = path.join(path.realpath(path.abspath(__file__)),
+                           theme, "48")
+    themes_paths.append(theme_path)
+
+# Data base file
+data_file = path.realpath("./data.json")
 
 # The icons map dict should follow this format
 # Old icon name as a key
@@ -21,18 +27,18 @@ with open(data_file, 'r') as db_obj:
     data = json.load(db_obj, object_pairs_hook=OrderedDict)
 
 
-def _move(old_name, new_name, directory):
-    old_name = path.join(path.realpath(directory), old_name) + ".svg"
-    new_name = path.join(path.realpath(directory), new_name) + ".svg"
+def _move(old_name, new_name):
+    for theme_path in themes_paths:
+        old_name = path.join(theme_path, old_name) + ".svg"
+        new_name = path.join(theme_path, new_name) + ".svg"
 
-    if path.exists(old_name):
-        move(old_name, new_name)
+        if path.exists(old_name):
+            move(old_name, new_name)
 
 
 to_delete = []
 for old_name, new_name in icons_map.items():
-    _move(old_name, new_name, cercle_icons)
-    _move(old_name, new_name, square_icons)
+    _move(old_name, new_name)
     if data.get(old_name):
         data[new_name] = data[old_name]
         to_delete.append(old_name)
